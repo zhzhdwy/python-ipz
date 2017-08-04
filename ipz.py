@@ -2,7 +2,7 @@
 #-*-   encoding: utf-8 -*-
 #this class change ip to network id etc.
 """Usage:
-  ipy <ip> <netmask>
+  ipy <ip> <netmask> [range]
   ipy (-h | --help)
 Options:
   -h --help    Show this screen.
@@ -125,6 +125,18 @@ class Requirements(object):
         ip_range_dict = {'start_ip': start_ip_dict, 'end_ip': end_ip_dict}
         return ip_range_dict
 
+    # 这里根据需求需要计算出每一个IP地址，后提的需求就单独加了一个方法
+    def iprangeDetail(self):
+        ip_range, ip_range_detail = self.iprange(), []
+        start_ip = int(ip_range['start_ip']['bin'], 2)
+        end_ip = int(ip_range['end_ip']['bin'], 2)
+        for i in range (start_ip, end_ip + 1):
+            ipbin = bin(i).split('b')[-1]
+            ip = self.formatChange(ipbin,'bin')
+            ip_range_detail.append(ip)
+        #这里传过去的是给list
+        return ip_range_detail
+
 
 
 def ipz(ip, netmask):
@@ -136,13 +148,15 @@ def ipz(ip, netmask):
         ip = ipa.formatChange(ip)
         netmask = ipa.maskStyle()
         renetmask = ipa.renetmasker()
-        ipinfo = {  'ip': ip,
-                    'nid': nid,
-                    'brd': brd,
-                    'ip_range': ip_range,
-                    'netmask': netmask,
-                    'renetmask': renetmask,
-                    'errcode': 0,
+        ip_range_detail = ipa.iprangeDetail()#收到的是个list
+        ipinfo = {'ip': ip,
+                  'nid': nid,
+                  'brd': brd,
+                  'ip_range': ip_range,
+                  'netmask': netmask,
+                  'renetmask': renetmask,
+                  'errcode': 0,
+                  'iprangedetail': ip_range_detail,
                    }
         return ipinfo
     else:
@@ -159,12 +173,16 @@ def main():
        'netmask': args['<netmask>'],
     }
     ip = ipz(**kwargs)
-    if not ip['errcode']:
+    if not ip['errcode'] and not args['range']:
         print "IPa: {0[ip][dotted_decimal]}/{0[netmask][digital]}".format(ip)
         print "Nid: {0[nid][dotted_decimal]}/{0[netmask][digital]}".format(ip)
         print "SIP: {0[ip_range][start_ip][dotted_decimal]}".format(ip)
         print "EIP: {0[ip_range][end_ip][dotted_decimal]}".format(ip)
         print "Brd: {0[brd][dotted_decimal]}".format(ip)
+    elif not ip['errcode'] and args['range']:
+        print 'You can use IP in {0[ip]} network segment:'.format(kwargs)
+        for i in ip['iprangedetail']:
+            print i['dotted_decimal']
     else:
         print "{0[errmsg]}".format(ip)
 
