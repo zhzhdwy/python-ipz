@@ -158,7 +158,15 @@ def main():
        'ip': args['<ip>'],
        'netmask': args['<netmask>'],
     }
-    print ipz(**kwargs)
+    ip = ipz(**kwargs)
+    if not ip['errcode']:
+        print "IPa: {0[ip][dotted_decimal]}/{0[netmask][digital]}".format(ip)
+        print "Nid: {0[nid][dotted_decimal]}/{0[netmask][digital]}".format(ip)
+        print "SIP: {0[ip_range][start_ip][dotted_decimal]}".format(ip)
+        print "EIP: {0[ip_range][end_ip][dotted_decimal]}".format(ip)
+        print "Brd: {0[brd][dotted_decimal]}".format(ip)
+    else:
+        print "{0[errmsg]}".format(ip)
 
 if __name__ == '__main__':
     main()
