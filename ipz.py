@@ -8,6 +8,7 @@ Options:
   -h --help    Show this screen.
   ip           Give a ip
   netmask      Give a netmask
+  range        show use some ip in network
 """
 
 
@@ -61,6 +62,7 @@ class Requirements(object):
             var_formats_dict['bin'] = var_bin
             var_formats_dict['dotted_decimal'] = var
         elif type == "bin":
+            var = var.zfill(32)
             var_dotted_decimal = ".".join([ str(int(var[0:8], 2)), str(int(var[8:16], 2)), str(int(var[16:24], 2)) , str(int(var[24:32], 2)) ])
             var_formats_dict['bin'] = var
             var_formats_dict['dotted_decimal'] = var_dotted_decimal
@@ -130,9 +132,9 @@ class Requirements(object):
         ip_range, ip_range_detail = self.iprange(), []
         start_ip = int(ip_range['start_ip']['bin'], 2)
         end_ip = int(ip_range['end_ip']['bin'], 2)
-        for i in range (start_ip, end_ip + 1):
+        for i in range(start_ip, end_ip + 1):
             ipbin = bin(i).split('b')[-1]
-            ip = self.formatChange(ipbin,'bin')
+            ip = self.formatChange(ipbin, 'bin')
             ip_range_detail.append(ip)
         #这里传过去的是给list
         return ip_range_detail
