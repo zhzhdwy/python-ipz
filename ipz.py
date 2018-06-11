@@ -128,16 +128,18 @@ class Requirements(object):
         return ip_range_dict
 
     # 这里根据需求需要计算出每一个IP地址，后提的需求就单独加了一个方法
-    def iprangeDetail(self):
-        ip_range, ip_range_detail = self.iprange(), []
+    def iprangegenerator(self):
+        # ip_range, ip_range_detail = self.iprange(), []
+        ip_range = self.iprange()
         start_ip = int(ip_range['start_ip']['bin'], 2)
         end_ip = int(ip_range['end_ip']['bin'], 2)
         for i in range(start_ip, end_ip + 1):
             ipbin = bin(i).split('b')[-1]
             ip = self.formatChange(ipbin, 'bin')
-            ip_range_detail.append(ip)
-        #这里传过去的是给list
-        return ip_range_detail
+            yield ip
+            # ip_range_detail.append(ip)
+        # 这里传过去的是生成器，防止占用内存
+        # return ip_range_detail
 
 
 
@@ -150,7 +152,7 @@ def ipz(ip, netmask):
         ip = ipa.formatChange(ip)
         netmask = ipa.maskStyle()
         renetmask = ipa.renetmasker()
-        ip_range_detail = ipa.iprangeDetail()#收到的是个list
+        ip_range_generator = ipa.iprangegenerator()#收到的是个list
         ipinfo = {'ip': ip,
                   'nid': nid,
                   'brd': brd,
@@ -158,35 +160,35 @@ def ipz(ip, netmask):
                   'netmask': netmask,
                   'renetmask': renetmask,
                   'errcode': 0,
-                  'iprangedetail': ip_range_detail,
+                  'ip_range_generator': ip_range_generator,
                    }
         return ipinfo
     else:
-        ipinfo = { 'errcode': ipa.formatCheck()['errcode'],
-                   'errmsg': ipa.formatCheck()['errmsg'],
-                   }
+        ipinfo = {'errcode': ipa.formatCheck()['errcode'],
+                  'errmsg': ipa.formatCheck()['errmsg'],
+                  }
         return ipinfo
 
 
 def main():
-    args = docopt(__doc__, version='ipz 1.0')
+    args = docopt(__doc__, version='ipz 1.2')
     kwargs = {
        'ip': args['<ip>'],
        'netmask': args['<netmask>'],
     }
     ip = ipz(**kwargs)
     if not ip['errcode'] and not args['range']:
-        print "IPa: {0[ip][dotted_decimal]}/{0[netmask][digital]}".format(ip)
-        print "Nid: {0[nid][dotted_decimal]}/{0[netmask][digital]}".format(ip)
-        print "SIP: {0[ip_range][start_ip][dotted_decimal]}".format(ip)
-        print "EIP: {0[ip_range][end_ip][dotted_decimal]}".format(ip)
-        print "Brd: {0[brd][dotted_decimal]}".format(ip)
+        print("IPa: {0[ip][dotted_decimal]}/{0[netmask][digital]}".format(ip))
+        print("Nid: {0[nid][dotted_decimal]}/{0[netmask][digital]}".format(ip))
+        print("SIP: {0[ip_range][start_ip][dotted_decimal]}".format(ip))
+        print("EIP: {0[ip_range][end_ip][dotted_decimal]}".format(ip))
+        print("Brd: {0[brd][dotted_decimal]}".format(ip))
     elif not ip['errcode'] and args['range']:
-        print 'You can use IP in {0[ip]} network segment:'.format(kwargs)
-        for i in ip['iprangedetail']:
-            print i['dotted_decimal']
+        print('You can use IP in {0[ip]} network segment:'.format(kwargs))
+        for i in ip['ip_range_generator']:
+            print(i['dotted_decimal'])
     else:
-        print "{0[errmsg]}".format(ip)
+        print("{0[errmsg]}".format(ip))
 
 if __name__ == '__main__':
     main()
